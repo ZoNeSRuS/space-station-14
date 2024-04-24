@@ -339,5 +339,6 @@
     - id: RubberStampApproved
     - id: RubberStampDenied
     - id: RubberStampSyndicate
+    - id: PenCentcom
 #ss-220 addAdminTools end
   - type: Unremoveable
