@@ -326,7 +326,6 @@
     - id: trayScanner
 #ss-220 addAdminTools
     - id: GeigerCounter
-    - id: ClothingBeltUtilityEngineering
     - id: HandheldHealthAnalyzer
     - id: JawsOfLife
     - id: PowerDrill
