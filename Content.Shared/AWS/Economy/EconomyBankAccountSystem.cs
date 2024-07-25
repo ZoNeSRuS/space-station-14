@@ -5,6 +5,7 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Access.Components;
+using Robust.Shared.Containers;
 
 namespace Content.Shared.AW.Economy
 {
@@ -13,6 +14,7 @@ namespace Content.Shared.AW.Economy
         [Dependency] private readonly ItemSlotsSystem _itemSlotsSystem = default!;
         [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
         [Dependency] private readonly IRobustRandom _robustRandom = default!;
+        [Dependency] private readonly SharedUserInterfaceSystem _userInterfaceSystem = default!;
 
         const uint MinPaydayPrecent = 25;
         const uint MaxPaydayPrecent = 75;
@@ -26,6 +28,10 @@ namespace Content.Shared.AW.Economy
 
             SubscribeLocalEvent<EconomyBankATMComponent, ComponentInit>(OnATMComponentInit);
             SubscribeLocalEvent<EconomyBankATMComponent, ComponentRemove>(OnATMComponentRemove);
+            SubscribeLocalEvent<EconomyBankATMComponent, EntInsertedIntoContainerMessage>(OnATMItemSlotChanged);
+            SubscribeLocalEvent<EconomyBankATMComponent, EntRemovedFromContainerMessage>(OnATMItemSlotChanged);
+            SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMWithdrawMessage>(OnATMWithdrawMessage);
+            SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMTransferMessage>(OnATMTransferMessage);
         }
         private void OnStorageComponentInit(EntityUid entity, EconomyBankAccountStorageComponent component, ComponentInit eventArgs)
         {
@@ -78,10 +84,37 @@ namespace Content.Shared.AW.Economy
             _itemSlotsSystem.AddItemSlot(uid, EconomyBankATMComponent.ATMCardId, atm.CardSlot);
 
             // UpdatePdaAppearance(uid, pda);
+            UpdateATMUserInterface((uid, atm));
         }
         private void OnATMComponentRemove(EntityUid uid, EconomyBankATMComponent atm, ComponentRemove args)
         {
             _itemSlotsSystem.RemoveItemSlot(uid, atm.CardSlot);
+        }
+
+        private void OnATMItemSlotChanged(EntityUid uid, EconomyBankATMComponent atm, ContainerModifiedMessage args)
+        {
+            if (args.Container.ID != atm.CardSlot.ID)
+                return;
+
+            UpdateATMUserInterface((uid, atm));
+        }
+
+        private void OnATMWithdrawMessage(EntityUid uid, EconomyBankATMComponent atm, EconomyBankATMWithdrawMessage args)
+        {
+            var bankAccount = GetATMInsertedAccount(atm);
+            if (bankAccount is null)
+                return;
+            if (!TryWithdraw(bankAccount, atm, args.Amount, out var error))
+                UpdateATMUserInterface((uid, atm), error);
+        }
+
+        private void OnATMTransferMessage(EntityUid uid, EconomyBankATMComponent atm, EconomyBankATMTransferMessage args)
+        {
+            var bankAccount = GetATMInsertedAccount(atm);
+            if (bankAccount is null)
+                return;
+            if (!TryTransfer(bankAccount, (uid, atm), args.RecipientAccountId, args.Amount, out var error))
+                UpdateATMUserInterface((uid, atm), error);
         }
 
         public EconomyBankAccountStorageComponent? GetStationAccountStorage()
@@ -106,7 +139,36 @@ namespace Content.Shared.AW.Economy
 
         public void Withdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum)
         {
-            
+            // UI should be updated 
+            //UpdateATMUserInterface(???);
+        }
+
+        public bool TryTransfer(EconomyBankAccountComponent fromAccount, Entity<EconomyBankATMComponent> atm, string recipientAccountId, ulong amount, [NotNullWhen(false)] out string? errorMessage)
+        {
+            errorMessage = null;
+            return true;
+        }
+
+        private void UpdateATMUserInterface(Entity<EconomyBankATMComponent> entity, string? error = null)
+        {
+            var bankAccount = GetATMInsertedAccount(entity.Comp);
+            _userInterfaceSystem.SetUiState(entity.Owner, EconomyBankATMUiKey.Key, new EconomyBankATMUserInterfaceState()
+            {
+                BankAccount = bankAccount is null ? null :
+                new() {
+                    Balance = bankAccount.Balance,
+                    AccountId = bankAccount.AccountId,
+                    AccountName = bankAccount.AccountName,
+                    Blocked = bankAccount.Blocked,
+                },
+                Error = error,
+            });
+        }
+
+        private EconomyBankAccountComponent? GetATMInsertedAccount(EconomyBankATMComponent atm)
+        {
+            TryComp(atm.CardSlot.Item, out EconomyBankAccountComponent? bankAccount);
+            return bankAccount;
         }
     }
 }

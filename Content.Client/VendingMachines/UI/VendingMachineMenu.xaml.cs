@@ -93,7 +93,7 @@ namespace Content.Client.VendingMachines.UI
                 if (itemName.Length > longestEntry.Length)
                     longestEntry = itemName;
 
-                vendingItem.Text = $"{itemName} [{entry.Amount}]";
+                vendingItem.Text = $"{itemName} [{entry.Price} TK] [{entry.Amount}]";
                 vendingItem.Icon = icon;
                 filteredInventory.Add(i);
             }

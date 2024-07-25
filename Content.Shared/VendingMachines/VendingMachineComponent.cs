@@ -212,6 +212,8 @@ namespace Content.Shared.VendingMachines
         [ViewVariables(VVAccess.ReadWrite)]
         public uint Amount;
         [ViewVariables(VVAccess.ReadWrite)]
+        public ulong Price;
+        [ViewVariables(VVAccess.ReadWrite)]
         public List<NetEntity> EntityUids = new();
         public VendingMachineInventoryEntry(InventoryType type, string id, uint amount)
         {
