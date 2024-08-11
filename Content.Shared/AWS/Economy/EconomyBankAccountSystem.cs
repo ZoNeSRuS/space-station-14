@@ -7,7 +7,7 @@ using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Access.Components;
 using Robust.Shared.Containers;
 
-namespace Content.Shared.AW.Economy
+namespace Content.Shared.AWS.Economy
 {
     public sealed partial class EconomyBankAccountSystem : EntitySystem
     {
@@ -22,9 +22,9 @@ namespace Content.Shared.AW.Economy
         public override void Initialize()
         {
             base.Initialize();
-            SubscribeLocalEvent<EconomyBankAccountStorageComponent, ComponentInit>(OnStorageComponentInit);
+            /*SubscribeLocalEvent<EconomyBankAccountStorageComponent, ComponentInit>(OnStorageComponentInit);*/
             SubscribeLocalEvent<EconomyBankAccountComponent, ComponentInit>(OnAccountComponentInit);
-            SubscribeLocalEvent<EconomyBankAccountComponent, ComponentRemove>(OnAccountComponentRemove);
+            // SubscribeLocalEvent<EconomyBankAccountComponent, ComponentRemove>(OnAccountComponentRemove);
 
             SubscribeLocalEvent<EconomyBankATMComponent, ComponentInit>(OnATMComponentInit);
             SubscribeLocalEvent<EconomyBankATMComponent, ComponentRemove>(OnATMComponentRemove);
@@ -33,57 +33,59 @@ namespace Content.Shared.AW.Economy
             SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMWithdrawMessage>(OnATMWithdrawMessage);
             SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMTransferMessage>(OnATMTransferMessage);
         }
-        private void OnStorageComponentInit(EntityUid entity, EconomyBankAccountStorageComponent component, ComponentInit eventArgs)
+        /*private void OnStorageComponentInit(EntityUid entity, EconomyBankAccountStorageComponent component, ComponentInit eventArgs)
         {
             if (GetStationAccountStorage() is not null)
             {
                 EntityManager.RemoveComponent(entity, component);
                 Log.Error("Cannot create more than 1 entities with EconomyBankAccountStorageComponent!");
             }
-        }
+        }*/
         private void OnAccountComponentInit(EntityUid entity, EconomyBankAccountComponent component, ComponentInit eventArgs)
         {
-            var storageComp = GetStationAccountStorage();
-            if (storageComp is not null)
-            {
+            /*var storageComp = GetStationAccountStorage();*/
+
+/*            if (storageComp is not null)
+            {*/
                 // string account_id = component.AccountIdByProto;
 
-                if (_prototypeManager.TryIndex(component.AccountIdByProto, out EconomyAccountIdPrototype? proto))
+            if (_prototypeManager.TryIndex(component.AccountIdByProto, out EconomyAccountIdPrototype? proto))
+            {
+                component.AccountId = proto.Prefix;
+
+                for (int strik = 0; strik < proto.Strik; strik++)
                 {
-                    component.AccountId = proto.Prefix;
+                    string formedStrik = "";
 
-                    for (int strik = 0; strik < proto.Strik; strik++)
+                    for (int num = 0; num < proto.NumbersPerStrik; num++)
                     {
-                        string formedStrik = "";
-                        for (int num = 0; num < proto.NumbersPerStrik; num++)
-                        {
-                            formedStrik += _robustRandom.Next(0, 10);
-                        }
-                        component.AccountId += proto.Descriptior + formedStrik;
+                        formedStrik += _robustRandom.Next(0, 10);
                     }
+
+                    component.AccountId = component.AccountId.Length == 0 ? formedStrik : component.AccountId + proto.Descriptior + formedStrik;
                 }
-
-                if (TryComp<IdCardComponent>(entity, out var idCardComponent))
-                    component.AccountName = idCardComponent.FullName ?? component.AccountName;
-
-                storageComp.Accounts.Add(component);
-                return;
             }
 
-            Log.Error("Cannot create EconomyBankAccountComponent without atleast 1 EconomyBankAccountStorageComponent!");
+            if (TryComp<IdCardComponent>(entity, out var idCardComponent))
+                component.AccountName = idCardComponent.FullName ?? component.AccountName;
+
+            /*storageComp.Accounts.Add(component);*/
+            /*return;
+            //}
+
+            Log.Error("Cannot create EconomyBankAccountComponent without atleast 1 EconomyBankAccountStorageComponent!");*/
         }
-        private void OnAccountComponentRemove(EntityUid entity, EconomyBankAccountComponent component, ComponentRemove eventArgs)
+        /*private void OnAccountComponentRemove(EntityUid entity, EconomyBankAccountComponent component, ComponentRemove eventArgs)
         {
             var storageComp = GetStationAccountStorage();
             if (storageComp is not null)
                 if (storageComp.Accounts.Contains(component))
                     storageComp.Accounts.Remove(component);
-        }
+        }*/
         private void OnATMComponentInit(EntityUid uid, EconomyBankATMComponent atm, ComponentInit args)
         {
             _itemSlotsSystem.AddItemSlot(uid, EconomyBankATMComponent.ATMCardId, atm.CardSlot);
 
-            // UpdatePdaAppearance(uid, pda);
             UpdateATMUserInterface((uid, atm));
         }
         private void OnATMComponentRemove(EntityUid uid, EconomyBankATMComponent atm, ComponentRemove args)
@@ -113,40 +115,75 @@ namespace Content.Shared.AW.Economy
             var bankAccount = GetATMInsertedAccount(atm);
             if (bankAccount is null)
                 return;
-            if (!TryTransfer(bankAccount, (uid, atm), args.RecipientAccountId, args.Amount, out var error))
+            if (!TrySendMoney(bankAccount, atm, args.RecipientAccountId, args.Amount, out var error))
                 UpdateATMUserInterface((uid, atm), error);
         }
 
-        public EconomyBankAccountStorageComponent? GetStationAccountStorage()
+        /*public EconomyBankAccountStorageComponent? GetStationAccountStorage()
         {
             AllEntityQuery<EconomyBankAccountStorageComponent>().MoveNext(out var _, out var comp);
 
             return comp;
-        }
+        }*/
 
         public EconomyBankAccountComponent? FindAccountById(string id)
         {
+            var enumerator = AllEntityQuery<EconomyBankAccountComponent>();
+            while (enumerator.MoveNext(out var _, out var comp))
+            {
+                if (comp.AccountId == id)
+                    return comp;
+            }
             return null;
+        }
+
+        private void Withdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum)
+        {
+            // UI should be updated 
+            //UpdateATMUserInterface(???);
+            component.Balance -= sum;
+            // log about withdraw money for captain
         }
 
         public bool TryWithdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum, [NotNullWhen(false)] out string? errorMessage)
         {
             errorMessage = "";
-            if (component.Balance >= sum)
+            if (sum > 0 && component.Balance >= sum)
+            {
+
                 return true;
+            }
+            errorMessage = "not enough money";
             return false;
         }
 
-        public void Withdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum)
+        private void SendMoney(EconomyBankAccountComponent fromAccount, EconomyBankAccountComponent toSend, ulong amount)
         {
-            // UI should be updated 
-            //UpdateATMUserInterface(???);
+            fromAccount.Balance -= amount;
+            toSend.Balance += amount;
+            // log about send money for captain
         }
 
-        public bool TryTransfer(EconomyBankAccountComponent fromAccount, Entity<EconomyBankATMComponent> atm, string recipientAccountId, ulong amount, [NotNullWhen(false)] out string? errorMessage)
+        public bool TrySendMoney(EconomyBankAccountComponent fromAccount, EconomyBankATMComponent atm, string recipientAccountId, ulong amount, [NotNullWhen(false)] out string? errorMessage)
         {
             errorMessage = null;
-            return true;
+
+            var recipientAccount = FindAccountById(recipientAccountId);
+
+            if (fromAccount.Balance >= amount)
+            {
+                if (recipientAccount is not null)
+                {
+                    SendMoney(fromAccount, recipientAccount, amount);
+                    return true;
+                }
+
+                errorMessage = "didn't find account";
+                return false;
+            }
+
+            errorMessage = "not enough money";
+            return false;
         }
 
         private void UpdateATMUserInterface(Entity<EconomyBankATMComponent> entity, string? error = null)

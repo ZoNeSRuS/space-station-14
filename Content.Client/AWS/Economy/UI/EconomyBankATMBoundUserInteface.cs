@@ -1,7 +1,7 @@
-using Content.Shared.AW.Economy;
+using Content.Shared.AWS.Economy;
 using Content.Client.AWS.Economy.UI;
 
-namespace Content.Client.AW.Economy.UI;
+namespace Content.Client.AWS.Economy.UI;
 
 public sealed class EconomyBankATMBoundUserInteface : BoundUserInterface
 {

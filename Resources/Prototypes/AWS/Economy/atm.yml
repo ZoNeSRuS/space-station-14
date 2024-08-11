@@ -69,6 +69,11 @@
   - type: Actions
   - type: Appearance
   - type: EconomyBankATM
+    cardSlot:
+      priority: 0
+      whitelist:
+        components:
+        - EconomyBankAccount
     
   
 - type: entity

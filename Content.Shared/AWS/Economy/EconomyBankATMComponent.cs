@@ -1,6 +1,6 @@
 using Content.Shared.Containers.ItemSlots;
 
-namespace Content.Shared.AW.Economy
+namespace Content.Shared.AWS.Economy
 {
     [RegisterComponent]
     public sealed partial class EconomyBankATMComponent : Component

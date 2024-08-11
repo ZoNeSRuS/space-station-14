@@ -1,6 +1,6 @@
 using Robust.Shared.Serialization;
 
-namespace Content.Shared.AW.Economy;
+namespace Content.Shared.AWS.Economy;
 
 [Serializable, NetSerializable]
 public sealed class EconomyBankATMUserInterfaceState : BoundUserInterfaceState

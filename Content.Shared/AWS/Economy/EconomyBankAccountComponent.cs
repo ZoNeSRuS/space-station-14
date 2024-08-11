@@ -1,7 +1,7 @@
 using Robust.Shared.Prototypes;
 using Content.Shared.Store;
 
-namespace Content.Shared.AW.Economy
+namespace Content.Shared.AWS.Economy
 {
     [RegisterComponent, AutoGenerateComponentState]
     public sealed partial class EconomyBankAccountComponent : Component

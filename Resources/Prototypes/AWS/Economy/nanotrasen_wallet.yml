@@ -14,7 +14,7 @@
 
 - type: economyAccountIdPrototype
   id: Nanotrasen
-  Descriptior: "-"
-  Prefix: "5051"
-  Strik: 4
-  NumbersPerStrik: 4
+  descriptior: "-"
+  prefix: "5051"
+  strik: 3
+  numbersPerStrik: 4

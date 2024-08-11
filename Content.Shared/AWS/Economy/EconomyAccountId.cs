@@ -1,6 +1,6 @@
 using Robust.Shared.Prototypes;
 
-namespace Content.Shared.AW.Economy
+namespace Content.Shared.AWS.Economy
 {
     [Prototype("economyAccountIdPrototype")]
     public sealed partial class EconomyAccountIdPrototype : IPrototype
