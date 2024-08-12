@@ -4,8 +4,25 @@
   name: ATM
   components:
   - type: Sprite
-    sprite: Structures/Machines/VendingMachines/empty.rsi
-    snapCardinals: true
+    sprite: AWS/economy/ATM.rsi
+    layers:
+      - map: ["computerLayerBody"]
+        state: ATM
+      - map: ["enum.PowerDeviceVisualLayers.Powered"]
+        state: ATM-on
+        shader: unshaded
+      - map: ["enum.WiresVisualLayers.MaintenancePanel"]
+        state: panel
+        visible: false
+  - type: GenericVisualizer
+    visuals:
+      enum.PowerDeviceVisuals.Powered:
+        enum.PowerDeviceVisualLayers.Powered:
+          True: { visible: true }
+          False: { visible: false }
+  - type: Icon
+    sprite: AWS/economy/ATM.rsi
+    state: icon
   - type: Physics
     bodyType: Static
   - type: Transform
@@ -54,6 +71,7 @@
       enum.EconomyBankATMUiKey.Key:
         type: EconomyBankATMBoundUserInteface
   - type: WiresPanel
+  - type: WiresVisuals
   - type: Anchorable
   - type: DoAfter
   - type: Electrified
