@@ -33,7 +33,7 @@ public sealed partial class EconomyBankATMMenu : FancyWindow
         {
             RefreshTransferButton();
         };
-        TransferButton.OnPressed += _ => Owner.OnWithdrawPressed((ulong) WithdrawAmountBox.Value);
+        TransferButton.OnPressed += _ => Owner.OnTransferPressed((ulong) TransferAmountBox.Value, TransferRecipientField.Text);
 
         RefreshWithdrawButton();
         RefreshTransferButton();
