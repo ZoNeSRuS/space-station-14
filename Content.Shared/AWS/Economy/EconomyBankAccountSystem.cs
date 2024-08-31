@@ -142,7 +142,7 @@ namespace Content.Shared.AWS.Economy
         {
             component.Balance -= sum;
             var pos = Comp<TransformComponent>(atm.Owner).MapPosition;
-            DropMoney(component.MoneyHolderProto, sum, pos);
+            DropMoneyHandler(component.MoneyHolderProto, sum, pos);
             // log about withdraw money for captain
         }
 
@@ -158,7 +158,7 @@ namespace Content.Shared.AWS.Economy
             return false;
         }
 
-        private void DropMoney(ProtoId<EntityPrototype> proto, ulong amount, MapCoordinates pos)
+        private void DropMoneyHandler(ProtoId<EntityPrototype> proto, ulong amount, MapCoordinates pos)
         {
             var ent = Spawn(proto, pos);
 
