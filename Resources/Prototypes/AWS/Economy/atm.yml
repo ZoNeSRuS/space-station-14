@@ -92,21 +92,3 @@
       whitelist:
         components:
         - EconomyBankAccount
-    
-  
-- type: entity
-  parent: BaseItem
-  id: BankAccountNanotrasen
-  name: bank account
-  components:
-  - type: Sprite
-    sprite: Objects/Misc/id_cards.rsi
-  - type: Item
-    size: Small
-    heldPrefix: default
-    storedRotation: -90
-  - type: EconomyBankAccount
-    allowCurrency: Thaler
-    accountIdByProto: Nanotrasen
-    balance: 10000
-

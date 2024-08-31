@@ -6,6 +6,7 @@ using Robust.Shared.Random;
 using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Access.Components;
 using Robust.Shared.Containers;
+using Robust.Shared.Map;
 
 namespace Content.Shared.AWS.Economy
 {
@@ -106,8 +107,12 @@ namespace Content.Shared.AWS.Economy
             var bankAccount = GetATMInsertedAccount(atm);
             if (bankAccount is null)
                 return;
-            if (!TryWithdraw(bankAccount, atm, args.Amount, out var error))
-                UpdateATMUserInterface((uid, atm), error);
+
+            string? error;
+
+            TryWithdraw(bankAccount, atm, args.Amount, out error);
+            /*DropMoney(bankAccount, args.Amount, Comp<TransformComponent>(uid).MapPosition);*/
+            UpdateATMUserInterface((uid, atm), error);
         }
 
         private void OnATMTransferMessage(EntityUid uid, EconomyBankATMComponent atm, EconomyBankATMTransferMessage args)
@@ -115,16 +120,12 @@ namespace Content.Shared.AWS.Economy
             var bankAccount = GetATMInsertedAccount(atm);
             if (bankAccount is null)
                 return;
-            if (!TrySendMoney(bankAccount, atm, args.RecipientAccountId, args.Amount, out var error))
-                UpdateATMUserInterface((uid, atm), error);
+
+            string? error;
+
+            TrySendMoney(bankAccount, atm, args.RecipientAccountId, args.Amount, out error);
+            UpdateATMUserInterface((uid, atm), error);
         }
-
-        /*public EconomyBankAccountStorageComponent? GetStationAccountStorage()
-        {
-            AllEntityQuery<EconomyBankAccountStorageComponent>().MoveNext(out var _, out var comp);
-
-            return comp;
-        }*/
 
         public EconomyBankAccountComponent? FindAccountById(string id)
         {
@@ -139,9 +140,9 @@ namespace Content.Shared.AWS.Economy
 
         private void Withdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum)
         {
-            // UI should be updated 
-            //UpdateATMUserInterface(???);
             component.Balance -= sum;
+            var pos = Comp<TransformComponent>(atm.Owner).MapPosition;
+            DropMoney(component.MoneyHolderProto, sum, pos);
             // log about withdraw money for captain
         }
 
@@ -150,11 +151,20 @@ namespace Content.Shared.AWS.Economy
             errorMessage = "";
             if (sum > 0 && component.Balance >= sum)
             {
-
+                Withdraw(component, atm, sum);
                 return true;
             }
             errorMessage = "not enough money";
             return false;
+        }
+
+        private void DropMoney(ProtoId<EntityPrototype> proto, ulong amount, MapCoordinates pos)
+        {
+            var ent = Spawn(proto, pos);
+
+            if (TryComp<EconomyMoneyHolderComponent>(ent, out var holderComp))
+                holderComp.Amount = amount;
+            // log about drop money for admins
         }
 
         private void SendMoney(EconomyBankAccountComponent fromAccount, EconomyBankAccountComponent toSend, ulong amount)

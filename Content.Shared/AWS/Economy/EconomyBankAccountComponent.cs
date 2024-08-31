@@ -10,6 +10,8 @@ namespace Content.Shared.AWS.Economy
         public ProtoId<CurrencyPrototype> AllowCurrency;
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
         public ProtoId<EconomyAccountIdPrototype> AccountIdByProto;
+        [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
+        public ProtoId<EntityPrototype> MoneyHolderProto;
 
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]

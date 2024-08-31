@@ -1,9 +1,26 @@
 - type: entity
   id: Thaler
   suffix: 1 TR
+  # components:
+  # - type: Stack
+  #   count: 1
+
+- type: entity
+  parent: BaseItem
+  id: ThalerHolder
+  name: thaler holder
   components:
-  - type: Stack
-    count: 1
+  - type: Sprite
+    sprite: Objects/Misc/id_cards.rsi
+    layers:
+    - state: admin
+    - state: idadmin
+  - type: Item
+    size: Small
+    heldPrefix: default
+  - type: EconomyMoneyHolder
+    allowCurrency: Thaler
+    amount: 0
 
 - type: currency
   id: Thaler
@@ -18,3 +35,23 @@
   prefix: "5051"
   strik: 3
   numbersPerStrik: 4
+
+- type: entity
+  parent: BaseItem
+  id: BankAccountNanotrasen
+  name: bank account
+  components:
+  - type: Sprite
+    sprite: Objects/Misc/id_cards.rsi
+    layers:
+    - state: admin
+    - state: idadmin
+  - type: Item
+    size: Small
+    heldPrefix: default
+    storedRotation: -90
+  - type: EconomyBankAccount
+    allowCurrency: Thaler
+    accountIdByProto: Nanotrasen
+    moneyHolderProto: ThalerHolder
+    balance: 10000
