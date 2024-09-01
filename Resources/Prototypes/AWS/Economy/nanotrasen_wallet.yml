@@ -19,6 +19,7 @@
     size: Small
     heldPrefix: default
   - type: EconomyMoneyHolder
+    allowCurrency: Thaler
     amount: 0
 
 - type: entity
@@ -27,13 +28,11 @@
   name: thaler holder
   components:
   - type: Sprite
-    sprite: Objects/Misc/id_cards.rsi
+    sprite: AWS/economy/moneyholder.rsi
     layers:
-    - state: admin
-    - state: idadmin
+    - state: icon
   - type: EconomyMoneyHolder
     allowCurrency: Thaler
-
 
 - type: currency
   id: Thaler
@@ -45,9 +44,9 @@
 - type: economyAccountIdPrototype
   id: Nanotrasen
   descriptior: "-"
-  prefix: "5051"
-  strik: 3
-  numbersPerStrik: 4
+  prefix: "NT"
+  strik: 1
+  numbersPerStrik: 6
 
 - type: entity
   parent: BaseItem

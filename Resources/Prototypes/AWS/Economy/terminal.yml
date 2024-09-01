@@ -58,7 +58,7 @@
   components:
   - type: Sprite 
     sprite: AWS/economy/terminal.rsi
-    state: c
+    state: cc
 
  
 

@@ -1,8 +1,9 @@
 using Content.Shared.Store;
 using Robust.Shared.Prototypes;
+using Robust.Shared.GameStates;
 namespace Content.Shared.AWS.Economy
 {
-    [RegisterComponent, AutoGenerateComponentState]
+    [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(true)]
     public sealed partial class EconomyMoneyHolderComponent : Component
     {
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
@@ -11,5 +12,9 @@ namespace Content.Shared.AWS.Economy
         [ViewVariables(VVAccess.ReadWrite)]
         [AutoNetworkedField]
         public ulong Amount = 0;
+
+        [ViewVariables(VVAccess.ReadWrite)]
+        [AutoNetworkedField]
+        public bool Emagged = false;
     }
 }

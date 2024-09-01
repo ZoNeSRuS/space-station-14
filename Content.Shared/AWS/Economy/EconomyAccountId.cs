@@ -7,7 +7,7 @@ namespace Content.Shared.AWS.Economy
     {
         [IdDataField]
         public string ID { get; private set; } = default!;
-        
+
         [DataField(required: false)]
         public string Prefix = "";
         [DataField(required: false)]

@@ -1,9 +1,10 @@
 using Robust.Shared.Prototypes;
 using Content.Shared.Store;
+using Robust.Shared.GameStates;
 
 namespace Content.Shared.AWS.Economy
 {
-    [RegisterComponent, AutoGenerateComponentState]
+    [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(true)]
     public sealed partial class EconomyBankAccountComponent : Component
     {
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]

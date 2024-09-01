@@ -5,6 +5,7 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Access.Components;
+using Content.Shared.Examine;
 using Robust.Shared.Containers;
 using Robust.Shared.Map;
 
@@ -23,6 +24,7 @@ namespace Content.Shared.AWS.Economy
         public override void Initialize()
         {
             base.Initialize();
+            SubscribeLocalEvent<EconomyMoneyHolderComponent, ExaminedEvent>(OnMoneyHolderExamine);
             /*SubscribeLocalEvent<EconomyBankAccountStorageComponent, ComponentInit>(OnStorageComponentInit);*/
             SubscribeLocalEvent<EconomyBankAccountComponent, ComponentInit>(OnAccountComponentInit);
             // SubscribeLocalEvent<EconomyBankAccountComponent, ComponentRemove>(OnAccountComponentRemove);
@@ -34,22 +36,14 @@ namespace Content.Shared.AWS.Economy
             SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMWithdrawMessage>(OnATMWithdrawMessage);
             SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMTransferMessage>(OnATMTransferMessage);
         }
-        /*private void OnStorageComponentInit(EntityUid entity, EconomyBankAccountStorageComponent component, ComponentInit eventArgs)
+        private void OnMoneyHolderExamine(Entity<EconomyMoneyHolderComponent> entity, ref ExaminedEvent args)
         {
-            if (GetStationAccountStorage() is not null)
-            {
-                EntityManager.RemoveComponent(entity, component);
-                Log.Error("Cannot create more than 1 entities with EconomyBankAccountStorageComponent!");
-            }
-        }*/
+            args.PushMarkup(Loc.GetString("moneyholder-component-on-examine-detailed-message",
+                ("moneyName", entity.Comp.AllowCurrency),
+                ("amount", entity.Comp.Amount)));
+        }
         private void OnAccountComponentInit(EntityUid entity, EconomyBankAccountComponent component, ComponentInit eventArgs)
         {
-            /*var storageComp = GetStationAccountStorage();*/
-
-/*            if (storageComp is not null)
-            {*/
-                // string account_id = component.AccountIdByProto;
-
             if (_prototypeManager.TryIndex(component.AccountIdByProto, out EconomyAccountIdPrototype? proto))
             {
                 component.AccountId = proto.Prefix;
@@ -163,14 +157,20 @@ namespace Content.Shared.AWS.Economy
             var ent = Spawn(proto, pos);
 
             if (TryComp<EconomyMoneyHolderComponent>(ent, out var holderComp))
+            {
                 holderComp.Amount = amount;
-            // log about drop money for admins
-        }
+                Dirty(holderComp);
+            }
+                // log about drop money for admins
+            }
 
         private void SendMoney(EconomyBankAccountComponent fromAccount, EconomyBankAccountComponent toSend, ulong amount)
         {
             fromAccount.Balance -= amount;
             toSend.Balance += amount;
+
+            Dirty(fromAccount);
+            Dirty(toSend);
             // log about send money for captain
         }
 
