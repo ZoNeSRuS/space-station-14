@@ -1,0 +1,67 @@
+- type: entity
+  id: BaseTerminal
+  name: base terminal
+  description: You're rich now, probably.
+  abstract: true
+#хз, мне нечего писать дальше, думай сам
+#Disssr top 1 razrab 
+
+- type: entity
+  id: ServiceTerminal
+  parent: BaseTerminal
+  name: service terminal
+  components:
+  - type: Sprite 
+    sprite: AWS/economy/terminal.rsi
+    state: ser
+
+- type: entity
+  id: SecurityTerminal
+  parent: BaseTerminal
+  name: security terminal
+  components:
+  - type: Sprite 
+    sprite: AWS/economy/terminal.rsi
+    state: sec
+
+- type: entity
+  id: ScienceTerminal
+  parent: BaseTerminal
+  name: science terminal
+  components:
+  - type: Sprite 
+    sprite: AWS/economy/terminal.rsi
+    state: sci
+
+- type: entity
+  id: MedicalTerminal
+  parent: BaseTerminal
+  name: medical terminal
+  components:
+  - type: Sprite 
+    sprite: AWS/economy/terminal.rsi
+    state: med
+
+- type: entity
+  id: CargoTerminal
+  parent: BaseTerminal
+  name: cargo terminal
+  components:
+  - type: Sprite 
+    sprite: AWS/economy/terminal.rsi
+    state: cargo
+
+- type: entity
+  id: CCTerminal
+  parent: BaseTerminal
+  name: central commandd terminal
+  components:
+  - type: Sprite 
+    sprite: AWS/economy/terminal.rsi
+    state: c
+
+ 
+
+
+  
+  

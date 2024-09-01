@@ -7,6 +7,22 @@
 
 - type: entity
   parent: BaseItem
+  id: MoneyHolder
+  name: money holder
+  description: A lot of money, probably.
+  components:
+  - type: Sprite
+    sprite: AWS/economy/moneyholder.rsi
+    layers:
+    - state: icon
+  - type: Item
+    size: Small
+    heldPrefix: default
+  - type: EconomyMoneyHolder
+    amount: 0
+
+- type: entity
+  parent: MoneyHolder
   id: ThalerHolder
   name: thaler holder
   components:
@@ -15,12 +31,9 @@
     layers:
     - state: admin
     - state: idadmin
-  - type: Item
-    size: Small
-    heldPrefix: default
   - type: EconomyMoneyHolder
     allowCurrency: Thaler
-    amount: 0
+
 
 - type: currency
   id: Thaler
