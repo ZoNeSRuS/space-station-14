@@ -9,11 +9,11 @@ namespace Content.Shared.AWS.Economy
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
         public ProtoId<CurrencyPrototype> AllowCurrency;
 
-        [ViewVariables(VVAccess.ReadWrite)]
+        [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
         public ulong Amount = 0;
 
-        [ViewVariables(VVAccess.ReadWrite)]
+        [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
         public bool Emagged = false;
     }
