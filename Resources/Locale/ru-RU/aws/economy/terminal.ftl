@@ -6,3 +6,4 @@ ent-ScienceTerminal = терминал научного отдела
 ent-MedicalTerminal = терминал медицинского отдела
 ent-CargoTerminal = терминал отдела снабжения
 ent-CCTerminal = терминал центрального командования
+ent-EngineeringTerminal = терминал инженерного отдела
