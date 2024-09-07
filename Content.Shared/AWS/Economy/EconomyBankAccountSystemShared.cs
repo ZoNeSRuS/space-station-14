@@ -8,26 +8,31 @@ using Content.Shared.Access.Components;
 using Content.Shared.Examine;
 using Robust.Shared.Containers;
 using Robust.Shared.Map;
+using Content.Shared.Interaction;
+using Content.Shared.VendingMachines;
+using Content.Shared.Popups;
+using Robust.Shared.Network;
+using Robust.Shared.Timing;
 
 namespace Content.Shared.AWS.Economy
 {
-    public sealed partial class EconomyBankAccountSystem : EntitySystem
+    public class EconomyBankAccountSystemShared : EntitySystem
     {
+        [Dependency] private readonly IGameTiming _gameTiming = default!;
+        [Dependency] private readonly INetManager _netManager = default!;
+        [Dependency] private readonly SharedPopupSystem _popupSystem = default!;
         [Dependency] private readonly ItemSlotsSystem _itemSlotsSystem = default!;
         [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
         [Dependency] private readonly IRobustRandom _robustRandom = default!;
         [Dependency] private readonly SharedUserInterfaceSystem _userInterfaceSystem = default!;
 
-        const uint MinPaydayPrecent = 25;
-        const uint MaxPaydayPrecent = 75;
-
         public override void Initialize()
         {
             base.Initialize();
+            SubscribeLocalEvent<EconomyBankTerminalComponent, ExaminedEvent>(OnBankTerminalExamine);
+
             SubscribeLocalEvent<EconomyMoneyHolderComponent, ExaminedEvent>(OnMoneyHolderExamine);
-            /*SubscribeLocalEvent<EconomyBankAccountStorageComponent, ComponentInit>(OnStorageComponentInit);*/
             SubscribeLocalEvent<EconomyBankAccountComponent, ComponentInit>(OnAccountComponentInit);
-            // SubscribeLocalEvent<EconomyBankAccountComponent, ComponentRemove>(OnAccountComponentRemove);
 
             SubscribeLocalEvent<EconomyBankATMComponent, ComponentInit>(OnATMComponentInit);
             SubscribeLocalEvent<EconomyBankATMComponent, ComponentRemove>(OnATMComponentRemove);
@@ -36,11 +41,27 @@ namespace Content.Shared.AWS.Economy
             SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMWithdrawMessage>(OnATMWithdrawMessage);
             SubscribeLocalEvent<EconomyBankATMComponent, EconomyBankATMTransferMessage>(OnATMTransferMessage);
         }
+
+        private void OnBankTerminalExamine(Entity<EconomyBankTerminalComponent> entity, ref ExaminedEvent args)
+        {
+            var comp = entity.Comp;
+            args.PushMarkup(Loc.GetString("economyBankTerminal-component-on-examine-connected-to",
+                ("accountId", comp.LinkedAccount)));
+
+            if (comp.Amount > 0)
+            {
+                args.PushMarkup(Loc.GetString("economyBankTerminal-component-on-examine-pay-for-ifmorethanzero",
+                ("amount", comp.Amount),
+                ("currencyName", comp.AllowCurrency)));
+                return;
+            }
+            args.PushMarkup(Loc.GetString("economyBankTerminal-component-on-examine-pay-for-iflessthanzero"));
+        }
         private void OnMoneyHolderExamine(Entity<EconomyMoneyHolderComponent> entity, ref ExaminedEvent args)
         {
             args.PushMarkup(Loc.GetString("moneyholder-component-on-examine-detailed-message",
                 ("moneyName", entity.Comp.AllowCurrency),
-                ("amount", entity.Comp.Amount)));
+                ("balance", entity.Comp.Balance)));
         }
         private void OnAccountComponentInit(EntityUid entity, EconomyBankAccountComponent component, ComponentInit eventArgs)
         {
@@ -63,20 +84,7 @@ namespace Content.Shared.AWS.Economy
 
             if (TryComp<IdCardComponent>(entity, out var idCardComponent))
                 component.AccountName = idCardComponent.FullName ?? component.AccountName;
-
-            /*storageComp.Accounts.Add(component);*/
-            /*return;
-            //}
-
-            Log.Error("Cannot create EconomyBankAccountComponent without atleast 1 EconomyBankAccountStorageComponent!");*/
         }
-        /*private void OnAccountComponentRemove(EntityUid entity, EconomyBankAccountComponent component, ComponentRemove eventArgs)
-        {
-            var storageComp = GetStationAccountStorage();
-            if (storageComp is not null)
-                if (storageComp.Accounts.Contains(component))
-                    storageComp.Accounts.Remove(component);
-        }*/
         private void OnATMComponentInit(EntityUid uid, EconomyBankATMComponent atm, ComponentInit args)
         {
             _itemSlotsSystem.AddItemSlot(uid, EconomyBankATMComponent.ATMCardId, atm.CardSlot);
@@ -105,7 +113,6 @@ namespace Content.Shared.AWS.Economy
             string? error;
 
             TryWithdraw(bankAccount, atm, args.Amount, out error);
-            /*DropMoney(bankAccount, args.Amount, Comp<TransformComponent>(uid).MapPosition);*/
             UpdateATMUserInterface((uid, atm), error);
         }
 
@@ -117,18 +124,16 @@ namespace Content.Shared.AWS.Economy
 
             string? error;
 
-            TrySendMoney(bankAccount, atm, args.RecipientAccountId, args.Amount, out error);
+            TrySendMoney(bankAccount, args.RecipientAccountId, args.Amount, out error);
             UpdateATMUserInterface((uid, atm), error);
         }
 
         public EconomyBankAccountComponent? FindAccountById(string id)
         {
-            var enumerator = AllEntityQuery<EconomyBankAccountComponent>();
-            while (enumerator.MoveNext(out var _, out var comp))
-            {
-                if (comp.AccountId == id)
-                    return comp;
-            }
+            var accounts = GetAccounts();
+            if (accounts.TryGetValue(id, out var comp))
+                return comp;
+
             return null;
         }
 
@@ -137,7 +142,11 @@ namespace Content.Shared.AWS.Economy
             component.Balance -= sum;
             var pos = Comp<TransformComponent>(atm.Owner).MapPosition;
             DropMoneyHandler(component.MoneyHolderProto, sum, pos);
-            // log about withdraw money for captain
+
+            component.Logs.Add(new(_gameTiming.CurTime, Loc.GetString("economybanksystem-log-withdraw",
+                ("amount", sum), ("currencyName", component.AllowCurrency))));
+
+            Dirty(component);
         }
 
         public bool TryWithdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum, [NotNullWhen(false)] out string? errorMessage)
@@ -148,7 +157,7 @@ namespace Content.Shared.AWS.Economy
                 Withdraw(component, atm, sum);
                 return true;
             }
-            errorMessage = "not enough money";
+            errorMessage = Loc.GetString("economybanksystem-transaction-error-notenoughmoney");
             return false;
         }
 
@@ -158,27 +167,35 @@ namespace Content.Shared.AWS.Economy
 
             if (TryComp<EconomyMoneyHolderComponent>(ent, out var holderComp))
             {
-                holderComp.Amount = amount;
+                holderComp.Balance = amount;
                 Dirty(holderComp);
             }
-                // log about drop money for admins
-            }
+        }
 
-        private void SendMoney(EconomyBankAccountComponent fromAccount, EconomyBankAccountComponent toSend, ulong amount)
+        private void SendMoney(IEconomyMoneyHolder fromAccount, EconomyBankAccountComponent toSend, ulong amount)
         {
             fromAccount.Balance -= amount;
             toSend.Balance += amount;
 
-            Dirty(fromAccount);
+            string senderAccoutId = "UNEXPECTED";
+            if (fromAccount is EconomyBankAccountComponent)
+            {
+                var fromAccountComponent = (fromAccount as EconomyBankAccountComponent)!;
+                fromAccountComponent.Logs.Add(new(_gameTiming.CurTime, Loc.GetString("economybanksystem-log-send-to",
+                    ("amount", amount), ("currencyName", toSend.AllowCurrency), ("accountId", toSend.AccountId))));
+
+                senderAccoutId = fromAccountComponent.AccountId;
+            }
+            toSend.Logs.Add(new(_gameTiming.CurTime, Loc.GetString("economybanksystem-log-send-from",
+                    ("amount", amount), ("currencyName", toSend.AllowCurrency), ("accountId", senderAccoutId))));
+
+            Dirty((fromAccount as Component)!);
             Dirty(toSend);
-            // log about send money for captain
         }
 
-        public bool TrySendMoney(EconomyBankAccountComponent fromAccount, EconomyBankATMComponent atm, string recipientAccountId, ulong amount, [NotNullWhen(false)] out string? errorMessage)
+        public bool TrySendMoney(IEconomyMoneyHolder fromAccount, EconomyBankAccountComponent? recipientAccount, ulong amount, [NotNullWhen(false)] out string? errorMessage)
         {
             errorMessage = null;
-
-            var recipientAccount = FindAccountById(recipientAccountId);
 
             if (fromAccount.Balance >= amount)
             {
@@ -188,15 +205,29 @@ namespace Content.Shared.AWS.Economy
                     return true;
                 }
 
-                errorMessage = "didn't find account";
+                errorMessage = Loc.GetString("economybanksystem-transaction-error-notfoundaccout");
                 return false;
             }
 
-            errorMessage = "not enough money";
+            errorMessage = Loc.GetString("economybanksystem-transaction-error-notenoughmoney");
             return false;
         }
 
-        private void UpdateATMUserInterface(Entity<EconomyBankATMComponent> entity, string? error = null)
+        public bool TrySendMoney(IEconomyMoneyHolder fromAccount, string recipientAccountId, ulong amount, [NotNullWhen(false)] out string? errorMessage)
+        {
+            errorMessage = null;
+
+            var recipientAccount = FindAccountById(recipientAccountId);
+            if (recipientAccount is null)
+            {
+                errorMessage = Loc.GetString("economybanksystem-transaction-error-notfoundaccout", ("accountId", recipientAccountId));
+                return false;
+            }
+
+            return TrySendMoney(fromAccount, recipientAccount, amount, out errorMessage);
+        }
+
+        public void UpdateATMUserInterface(Entity<EconomyBankATMComponent> entity, string? error = null)
         {
             var bankAccount = GetATMInsertedAccount(entity.Comp);
             _userInterfaceSystem.SetUiState(entity.Owner, EconomyBankATMUiKey.Key, new EconomyBankATMUserInterfaceState()
@@ -212,10 +243,23 @@ namespace Content.Shared.AWS.Economy
             });
         }
 
-        private EconomyBankAccountComponent? GetATMInsertedAccount(EconomyBankATMComponent atm)
+        public EconomyBankAccountComponent? GetATMInsertedAccount(EconomyBankATMComponent atm)
         {
             TryComp(atm.CardSlot.Item, out EconomyBankAccountComponent? bankAccount);
             return bankAccount;
+        }
+
+        public Dictionary<string, EconomyBankAccountComponent> GetAccounts()
+        {
+            Dictionary<string, EconomyBankAccountComponent> list = new();
+
+            var accountsEnum = AllEntityQuery<EconomyBankAccountComponent>();
+            while (accountsEnum.MoveNext(out var comp))
+            {
+                list.Add(comp.AccountId, comp);
+            }
+
+            return list;
         }
     }
 }

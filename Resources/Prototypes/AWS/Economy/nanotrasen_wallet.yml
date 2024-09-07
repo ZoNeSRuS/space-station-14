@@ -10,6 +10,7 @@
   id: MoneyHolder
   name: money holder
   description: A lot of money, probably.
+  abstract: true
   components:
   - type: Sprite
     sprite: AWS/economy/moneyholder.rsi
@@ -18,6 +19,8 @@
   - type: Item
     size: Small
     heldPrefix: default
+    shape:
+    - 0,0,1,0
   - type: EconomyMoneyHolder
     allowCurrency: Thaler
     amount: 0
@@ -32,6 +35,19 @@
     layers:
     - state: icon
   - type: EconomyMoneyHolder
+    allowCurrency: Thaler
+
+- type: entity
+  parent: MoneyHolder
+  id: AdminThalerHolder
+  name: admin thaler holder
+  components:
+  - type: Sprite
+    sprite: AWS/economy/moneyholder.rsi
+    layers:
+    - state: icon
+  - type: EconomyMoneyHolder
+    balance: 10000
     allowCurrency: Thaler
 
 - type: currency

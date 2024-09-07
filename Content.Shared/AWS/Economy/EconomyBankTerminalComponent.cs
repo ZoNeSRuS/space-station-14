@@ -4,17 +4,20 @@ using Robust.Shared.GameStates;
 namespace Content.Shared.AWS.Economy
 {
     [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(true)]
-    public sealed partial class EconomyMoneyHolderComponent : Component, IEconomyMoneyHolder
+    public sealed partial class EconomyBankTerminalComponent : Component
     {
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
-        public ProtoId<CurrencyPrototype> AllowCurrency;
+        public ProtoId<CurrencyPrototype> AllowCurrency = "Thaler";
 
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
-        public ulong Balance { get; set; } = 0;
+        public string LinkedAccount = "NO LINK TO ACCOUNT";
 
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
-        public bool Emagged = false;
+        public ulong Amount = 0;
+
+        [ViewVariables(VVAccess.ReadWrite), DataField]
+        public bool AllowUiEdit = false;
     }
 }

@@ -1,7 +1,10 @@
 using Content.Client.VendingMachines.UI;
 using Content.Shared.VendingMachines;
+using FastAccessors;
 using Robust.Client.UserInterface.Controls;
+using Robust.Shared.Utility;
 using System.Linq;
+using Content.Shared.Emag.Components;
 
 namespace Content.Client.VendingMachines
 {
@@ -16,8 +19,11 @@ namespace Content.Client.VendingMachines
         [ViewVariables]
         private List<int> _cachedFilteredIndex = new();
 
+        private VendingMachineSystem _vendingMachineSystem;
+
         public VendingMachineBoundUserInterface(EntityUid owner, Enum uiKey) : base(owner, uiKey)
         {
+            _vendingMachineSystem = EntMan.System<VendingMachineSystem>();
         }
 
         protected override void Open()
@@ -51,6 +57,18 @@ namespace Content.Client.VendingMachines
             _menu?.Populate(_cachedInventory, out _cachedFilteredIndex, _menu.SearchBar.Text);
         }
 
+        private VendingMachineInventoryEntry? GetEntry(EntityUid uid, VendingMachineComponent component)
+        {
+            string selectedId = component.SelectedItemId!;
+            if (component.SelectedItemInventoryType == InventoryType.Emagged && EntMan.HasComponent<EmaggedComponent>(uid))
+                return component.EmaggedInventory.GetValueOrDefault(selectedId);
+
+            if (component.SelectedItemInventoryType == InventoryType.Contraband && component.Contraband)
+                return component.ContrabandInventory.GetValueOrDefault(selectedId);
+
+            return component.Inventory.GetValueOrDefault(selectedId);
+        }
+
         private void OnItemSelected(ItemList.ItemListSelectedEventArgs args)
         {
             if (_cachedInventory.Count == 0)
@@ -61,8 +79,24 @@ namespace Content.Client.VendingMachines
             if (selectedItem == null)
                 return;
 
-            SendMessage(new VendingMachineEjectMessage(selectedItem.Type, selectedItem.ID));
-        }
+            // SS14RU
+            // SendMessage(new VendingMachineEjectMessage(selectedItem.Type, selectedItem.ID));
+            /*if (EntMan.TryGetComponent<VendingMachineComponent>(Owner, out var vendingMachineComponent))
+            {
+                var entry = GetEntry(Owner, vendingMachineComponent);
+                if (entry is not null)
+                {
+                    if (entry.Price > 0)
+                    {
+                        SendMessage(new VendingMachineSelectMessage(selectedItem.Type, selectedItem.ID));
+                    }
+                }
+            }*/
+            //if (EntMan.TryGetComponent<VendingMachineComponent>(Owner, out var vendingMachineComponent))
+
+            SendMessage(new VendingMachineSelectMessage(selectedItem.Type, selectedItem.ID));
+        // SS14RU
+    }
 
         protected override void Dispose(bool disposing)
         {

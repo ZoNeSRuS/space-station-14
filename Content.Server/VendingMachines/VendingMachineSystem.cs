@@ -31,6 +31,7 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 using Content.Server.Advertise.EntitySystems;
+using Content.Shared.AWS.Economy;
 
 namespace Content.Server.VendingMachines
 {
@@ -69,6 +70,9 @@ namespace Content.Server.VendingMachines
             {
                 subs.Event<BoundUIOpenedEvent>(OnBoundUIOpened);
                 subs.Event<VendingMachineEjectMessage>(OnInventoryEjectMessage);
+                // SS14RU
+                subs.Event<VendingMachineSelectMessage>(OnSelectMessage);
+                // SS14RU
             });
 
             SubscribeLocalEvent<VendingMachineComponent, VendingMachineSelfDispenseEvent>(OnSelfDispense);
@@ -130,6 +134,22 @@ namespace Content.Server.VendingMachines
             var state = new VendingMachineInterfaceState(GetAllInventory(uid, component));
 
             _userInterfaceSystem.SetUiState(uid, VendingMachineUiKey.Key, state);
+        }
+
+        private void OnSelectMessage(EntityUid uid, VendingMachineComponent component, VendingMachineSelectMessage args)
+        {
+            var entry = GetEntry(uid, args.ID, args.Type, component);
+            if (!TryComp<EconomyBankTerminalComponent>(uid, out var economyBankTerminalComponent) || HasComp<EmaggedComponent>(uid) || (entry is not null && entry.Price == 0))
+            {
+                OnInventoryEjectMessage(uid, component, new VendingMachineEjectMessage(args.Type, args.ID) { Actor = args.Actor });
+                return;
+            }
+            if (economyBankTerminalComponent is not null && entry is not null)
+            {
+                economyBankTerminalComponent.Amount = entry.Price;
+                component.SelectedItemInventoryType = args.Type;
+                component.SelectedItemId = args.ID;
+            }
         }
 
         private void OnInventoryEjectMessage(EntityUid uid, VendingMachineComponent component, VendingMachineEjectMessage args)

@@ -1,11 +1,12 @@
 using Robust.Shared.Prototypes;
 using Content.Shared.Store;
 using Robust.Shared.GameStates;
+using Robust.Shared.Serialization;
 
 namespace Content.Shared.AWS.Economy
 {
     [RegisterComponent, NetworkedComponent, AutoGenerateComponentState(true)]
-    public sealed partial class EconomyBankAccountComponent : Component
+    public sealed partial class EconomyBankAccountComponent : Component, IEconomyMoneyHolder
     {
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
         public ProtoId<CurrencyPrototype> AllowCurrency;
@@ -16,7 +17,7 @@ namespace Content.Shared.AWS.Economy
 
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
-        public ulong Balance = 0;
+        public ulong Balance { get; set; } = 0;
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
         public ulong Penalty = 0;
@@ -31,5 +32,20 @@ namespace Content.Shared.AWS.Economy
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
         public bool Blocked = false;
+
+        [ViewVariables(VVAccess.ReadWrite)]
+        public List<EconomyBankAccountLogField> Logs = new();
+    }
+
+    [Serializable, NetSerializable]
+    public struct EconomyBankAccountLogField
+    {
+        public EconomyBankAccountLogField(TimeSpan logTime, string logText)
+        {
+            Date = logTime;
+            Text = logText;
+        }
+        public TimeSpan Date;
+        public string Text;
     }
 }

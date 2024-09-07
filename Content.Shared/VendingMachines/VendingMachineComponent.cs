@@ -125,6 +125,15 @@ namespace Content.Shared.VendingMachines
 
         public float NonLimitedEjectRange = 5f;
 
+        /// <summary>
+        /// SS14RU
+        /// </summary>
+        public string? SelectedItemId;
+        /// <summary>
+        /// SS14RU
+        /// </summary>
+        public InventoryType SelectedItemInventoryType;
+
         public float EjectAccumulator = 0f;
         public float DenyAccumulator = 0f;
         public float DispenseOnHitAccumulator = 0f;
