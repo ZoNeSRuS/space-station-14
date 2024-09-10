@@ -34,6 +34,7 @@ namespace Content.Shared.AWS.Economy
         public bool Blocked = false;
 
         [ViewVariables(VVAccess.ReadWrite)]
+        [AutoNetworkedField]
         public List<EconomyBankAccountLogField> Logs = new();
     }
 
