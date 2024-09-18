@@ -10,15 +10,21 @@
     size: Small
     heldPrefix: default
   - type: EconomyBankTerminal
+  - type: ActivatableUI
+    key: enum.EconomyTerminalUiKey.Key
+  - type: UserInterface
+    interfaces:
+      enum.EconomyTerminalUiKey.Key:
+        type: EconomyTerminalBoundUserInterface
 #хз, мне нечего писать дальше, думай сам
-#Disssr top 1 razrab 
+#Disssr top 1 razrab
 
 - type: entity
   id: ServiceTerminal
   parent: BaseTerminal
   name: service terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: ser
   - type: EconomyBankTerminal
@@ -30,7 +36,7 @@
   parent: BaseTerminal
   name: security terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: sec
   - type: EconomyBankTerminal
@@ -42,7 +48,7 @@
   parent: BaseTerminal
   name: science terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: sci
   - type: EconomyBankTerminal
@@ -54,7 +60,7 @@
   parent: BaseTerminal
   name: medical terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: med
   - type: EconomyBankTerminal
@@ -66,7 +72,7 @@
   parent: BaseTerminal
   name: cargo terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: cargo
   - type: EconomyBankTerminal
@@ -78,7 +84,7 @@
   parent: BaseTerminal
   name: engineering terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: eng
   - type: EconomyBankTerminal
@@ -90,7 +96,7 @@
   parent: BaseTerminal
   name: central command terminal
   components:
-  - type: Sprite 
+  - type: Sprite
     sprite: AWS/economy/terminal.rsi
     state: cc
   - type: EconomyBankTerminal

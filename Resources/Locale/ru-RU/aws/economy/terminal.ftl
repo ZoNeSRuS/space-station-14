@@ -10,3 +10,6 @@ ent-MedicalTerminal = терминал медицинского отдела
 ent-CargoTerminal = терминал отдела снабжения
 ent-CCTerminal = терминал центрального командования
 ent-EngineeringTerminal = терминал инженерного отдела
+economy-Terminal-SetButton-button = Установить
+economy-Terminal-Reason = Причина
+economy-Terminal-Amount = Сумма
