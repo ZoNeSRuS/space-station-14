@@ -42,11 +42,12 @@ namespace Content.Server.AWS.Economy
                 return;
 
             var moneyHolderCount = _robustRandom.Next(1, component.EmagDropMoneyHolderRandomCount + 1);
+            var mapPos = Comp<TransformComponent>(uid).MapPosition;
 
             for (int i = 0; i < moneyHolderCount; i++)
             {
                 var droppedEnt = DropMoneyHandler(component.MoneyHolderEntId,
-                    listMoney[_robustRandom.Next(0, listMoneyCount)], Comp<TransformComponent>(uid).MapPosition);
+                    listMoney[_robustRandom.Next(0, listMoneyCount)], mapPos);
                 droppedEnt.Comp.Emagged = true;
             }
 
