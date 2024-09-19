@@ -9,11 +9,11 @@ namespace Content.Shared.AWS.Economy
     public sealed partial class EconomyBankAccountComponent : Component, IEconomyMoneyHolder
     {
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
-        public ProtoId<CurrencyPrototype> AllowCurrency;
+        public ProtoId<CurrencyPrototype> AllowCurrency = "Thaler";
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
-        public ProtoId<EconomyAccountIdPrototype> AccountIdByProto;
+        public ProtoId<EconomyAccountIdPrototype> AccountIdByProto = "Nanotrasen";
         [ViewVariables(VVAccess.ReadWrite), DataField(required: true)]
-        public ProtoId<EntityPrototype> MoneyHolderProto;
+        public EntProtoId<EconomyMoneyHolderComponent> MoneyHolderEntId = "ThalerHolder";
 
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
@@ -25,6 +25,7 @@ namespace Content.Shared.AWS.Economy
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
         public string AccountId = "NO VALUE";
+
         [ViewVariables(VVAccess.ReadWrite), DataField]
         [AutoNetworkedField]
         public string AccountName = "UNEXPECTED USER";

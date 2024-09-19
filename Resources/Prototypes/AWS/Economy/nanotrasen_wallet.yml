@@ -81,5 +81,5 @@
   - type: EconomyBankAccount
     allowCurrency: Thaler
     accountIdByProto: Nanotrasen
-    moneyHolderProto: ThalerHolder
+    moneyHolderEntId: ThalerHolder
     balance: 10000

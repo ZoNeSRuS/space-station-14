@@ -1,6 +1,5 @@
 using Content.Client.VendingMachines.UI;
 using Content.Shared.VendingMachines;
-using FastAccessors;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Utility;
 using System.Linq;

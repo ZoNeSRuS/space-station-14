@@ -13,6 +13,7 @@ using Content.Shared.VendingMachines;
 using Content.Shared.Popups;
 using Robust.Shared.Network;
 using Robust.Shared.Timing;
+using JetBrains.Annotations;
 
 namespace Content.Shared.AWS.Economy
 {
@@ -128,6 +129,7 @@ namespace Content.Shared.AWS.Economy
             UpdateATMUserInterface((uid, atm), error);
         }
 
+        [PublicAPI]
         public EconomyBankAccountComponent? FindAccountById(string id)
         {
             var accounts = GetAccounts();
@@ -141,7 +143,7 @@ namespace Content.Shared.AWS.Economy
         {
             component.Balance -= sum;
             var pos = Comp<TransformComponent>(atm.Owner).MapPosition;
-            DropMoneyHandler(component.MoneyHolderProto, sum, pos);
+            DropMoneyHandler(component.MoneyHolderEntId, sum, pos);
 
             component.Logs.Add(new(_gameTiming.CurTime, Loc.GetString("economybanksystem-log-withdraw",
                 ("amount", sum), ("currencyName", component.AllowCurrency))));
@@ -149,6 +151,7 @@ namespace Content.Shared.AWS.Economy
             Dirty(component);
         }
 
+        [PublicAPI]
         public bool TryWithdraw(EconomyBankAccountComponent component, EconomyBankATMComponent atm, ulong sum, [NotNullWhen(false)] out string? errorMessage)
         {
             errorMessage = "";
@@ -161,15 +164,17 @@ namespace Content.Shared.AWS.Economy
             return false;
         }
 
-        private void DropMoneyHandler(ProtoId<EntityPrototype> proto, ulong amount, MapCoordinates pos)
+        [PublicAPI]
+        public Entity<EconomyMoneyHolderComponent> DropMoneyHandler(EntProtoId<EconomyMoneyHolderComponent> entId, ulong amount, MapCoordinates pos)
         {
-            var ent = Spawn(proto, pos);
+            var ent = Spawn(entId, pos);
 
-            if (TryComp<EconomyMoneyHolderComponent>(ent, out var holderComp))
-            {
-                holderComp.Balance = amount;
-                Dirty(holderComp);
-            }
+            var moneyHolderComp = Comp<EconomyMoneyHolderComponent>(ent);
+            moneyHolderComp.Balance = amount;
+
+            Dirty(moneyHolderComp);
+
+            return (ent, moneyHolderComp);
         }
 
         private void SendMoney(IEconomyMoneyHolder fromAccount, EconomyBankAccountComponent toSend, ulong amount)
@@ -193,6 +198,7 @@ namespace Content.Shared.AWS.Economy
             Dirty(toSend);
         }
 
+        [PublicAPI]
         public bool TrySendMoney(IEconomyMoneyHolder fromAccount, EconomyBankAccountComponent? recipientAccount, ulong amount, [NotNullWhen(false)] out string? errorMessage)
         {
             errorMessage = null;
@@ -213,6 +219,7 @@ namespace Content.Shared.AWS.Economy
             return false;
         }
 
+        [PublicAPI]
         public bool TrySendMoney(IEconomyMoneyHolder fromAccount, string recipientAccountId, ulong amount, [NotNullWhen(false)] out string? errorMessage)
         {
             errorMessage = null;
@@ -227,6 +234,7 @@ namespace Content.Shared.AWS.Economy
             return TrySendMoney(fromAccount, recipientAccount, amount, out errorMessage);
         }
 
+        [PublicAPI]
         public void UpdateATMUserInterface(Entity<EconomyBankATMComponent> entity, string? error = null)
         {
             var bankAccount = GetATMInsertedAccount(entity.Comp);
@@ -243,12 +251,14 @@ namespace Content.Shared.AWS.Economy
             });
         }
 
+        [PublicAPI]
         public EconomyBankAccountComponent? GetATMInsertedAccount(EconomyBankATMComponent atm)
         {
             TryComp(atm.CardSlot.Item, out EconomyBankAccountComponent? bankAccount);
             return bankAccount;
         }
 
+        [PublicAPI]
         public Dictionary<string, EconomyBankAccountComponent> GetAccounts()
         {
             Dictionary<string, EconomyBankAccountComponent> list = new();

@@ -5,18 +5,53 @@ using Content.Shared.Popups;
 using Robust.Shared.Network;
 using Content.Shared.AWS.Economy;
 using Content.Server.Popups;
+using Content.Shared.Emag.Components;
+using Content.Shared.Emag.Systems;
+using Robust.Shared.Audio;
+using Robust.Shared.Audio.Systems;
+using Robust.Shared.Random;
 
 namespace Content.Server.AWS.Economy
 {
     public sealed class EconomyBankAccountSystem : EconomyBankAccountSystemShared
     {
+        [Dependency] private readonly IRobustRandom _robustRandom = default!;
+        [Dependency] private readonly SharedAudioSystem _audioSystem = default!;
         [Dependency] private readonly VendingMachineSystem _vendingMachine = default!;
         [Dependency] private readonly INetManager _netManager = default!;
         [Dependency] private readonly PopupSystem _popupSystem = default!;
         public override void Initialize()
         {
+            SubscribeLocalEvent<EconomyBankATMComponent, GotEmaggedEvent>(OnEmagged);
             SubscribeLocalEvent<EconomyBankTerminalComponent, InteractUsingEvent>(OnTerminalInteracted);
             SubscribeLocalEvent<EconomyBankATMComponent, InteractUsingEvent>(OnATMInteracted);
+        }
+
+        private void OnEmagged(EntityUid uid, EconomyBankATMComponent component, ref GotEmaggedEvent args)
+        {
+            if (HasComp<EmaggedComponent>(uid) || args.Handled)
+                return;
+
+            var listMoney = component.EmagDropMoneyValues;
+            var listMoneyCount = listMoney.Count;
+
+            if (listMoneyCount == 0)
+                return;
+
+            if (component.EmagDropMoneyHolderRandomCount == 0)
+                return;
+
+            var moneyHolderCount = _robustRandom.Next(1, component.EmagDropMoneyHolderRandomCount + 1);
+
+            for (int i = 0; i < moneyHolderCount; i++)
+            {
+                var droppedEnt = DropMoneyHandler(component.MoneyHolderEntId,
+                    listMoney[_robustRandom.Next(0, listMoneyCount)], Comp<TransformComponent>(uid).MapPosition);
+                droppedEnt.Comp.Emagged = true;
+            }
+
+            _audioSystem.PlayPvs(component.EmagSound, uid);
+            args.Handled = true;
         }
         private void OnATMInteracted(EntityUid uid, EconomyBankATMComponent component, InteractUsingEvent args)
         {

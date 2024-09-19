@@ -87,6 +87,9 @@
   - type: Actions
   - type: Appearance
   - type: EconomyBankATM
+    emagDropMoneyHolderRandomCount: 3
+    moneyHolderEntId: "ThalerHolder"
+    emagDropMoneyValues: [50, 100, 150, 300]
     cardSlot:
       priority: 0
       whitelist:
