@@ -295,6 +295,14 @@
   - SecurityWinterBoots
   - BootsJackSec
   - DetectiveShoesBootsLaceup
+
+- type: loadoutGroup
+  id: DetectiveNeck
+  name: loadout-group-detective-neck
+  loadouts:
+  - DefaultDetectiveHolster
+  - HolsterLegendaryMarksman
+  - HolsterBlackAngel
   # Детектив (Конец)
 #! Служба безопасности (Конец)
 
