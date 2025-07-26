@@ -1,17 +1,4 @@
 ﻿Entries:
-- author: Kemran
-  changes:
-  - message: "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0430 ID \u043A\u0430\
-      \u0440\u0442\u0430 \u0437\u0430\u043A\u043B\u044E\u0447\u0451\u043D\u043D\u043E\
-      \u0433\u043E. \u041C\u043E\u0436\u043D\u043E \u043D\u0430\u0439\u0442\u0438\
-      \ \u0432 \u0433\u0430\u0440\u0434\u0435\u0440\u043E\u0431\u0435 \u0437\u0430\
-      \u043A\u043B\u044E\u0447\u0451\u043D\u043D\u043E\u0433\u043E \u0432 \u043A\u043E\
-      \u043B\u0438\u0447\u0435\u0441\u0442\u0432\u0435 \u0434\u0432\u0443\u0445 \u0448\
-      \u0442\u0443\u043A."
-    type: Add
-  id: 579
-  time: '2024-10-09T20:07:28.0000000+00:00'
-  url: https://github.com/SerbiaStrong-220/space-station-14/pull/2037
 - author: Svarshik
   changes:
   - message: "\u0422\u0435\u043F\u0435\u0440\u044C \u0440\u0435\u0432\u0435\u043D\u0430\
@@ -7034,3 +7021,16 @@
   id: 1078
   time: '2025-07-24T19:05:48.0000000+00:00'
   url: https://github.com/SerbiaStrong-220/space-station-14/pull/3153
+- author: spo9k
+  changes:
+  - message: "\u0431\u0430\u043D\u0430\u043D\u0430\u0444\u043E\u043D \u043F\u0440\u044F\
+      \u043C\u0430\u044F \u0441\u0432\u044F\u0437\u044C \u0441 \u043C\u0430\u0442\u0435\
+      \u0440\u044C\u044E, \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D \u0432\
+      \ \u0448\u043A\u0430\u0444 \u043A\u043B\u043E\u0443\u043D\u0443 \u0441 25% \u0448\
+      \u0430\u043D\u0441\u043E\u043C \u043C\u043E\u0436\u0435\u0442 \u043F\u043E\u044F\
+      \u0432\u0438\u0442\u0441\u044F \u0432 \u0448\u043A\u0430\u0444\u0443 \u043A\u043B\
+      \u043E\u0443\u043D\u0430."
+    type: Add
+  id: 1079
+  time: '2025-07-26T14:16:21.0000000+00:00'
+  url: https://github.com/SerbiaStrong-220/space-station-14/pull/2836
